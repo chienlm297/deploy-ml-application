@@ -20,6 +20,7 @@ def get_client():
             aws_secret_access_key=config["MINIO_SECRET_KEY"],
         )
     except ClientError as e:
+        print("[INFO] Error when connect to minio storage")
         logging.error(e)
         return None
 
@@ -29,17 +30,13 @@ def save_images(images, folder_name):
     if s3_client is None:
         return False
     try:
-        for i, im in enumerate(images):
-            buffer = io.BytesIO()
-            im.save(buffer, "JPEG")
-            buffer.seek(0)
+        for i, buffer in enumerate(images):
             s3_client.put_object(
                 Bucket=config["BUCKET_IMAGE"],
                 Key="images/{}/{}".format(folder_name, i),
                 Body=buffer,
                 ContentType="image/png",
             )
-            buffer.close()
         return True
     except ClientError as e:
         logging.error(e)

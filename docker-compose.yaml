@@ -1,0 +1,54 @@
+version: "3.9"
+
+networks: 
+  app-tier:
+    driver: bridge
+
+
+services: 
+  minio:
+    image: minio/minio
+    ports:
+      - "35633:35633"
+    environment:
+      - MINIO_ACCESS_KEY=${MINIO_SECRET_KEY:-minio-access-key}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minio-secret-key}
+    volumes:
+      - ./data/minio:/data
+    command: server /data --console-address ":35633"
+    networks:
+      - app-tier
+  
+  api:
+    build: ./api
+    ports:
+      - "6868:6868"
+    environment:
+      - MINIO_ADDRESS=${MINIO_ADDRESS:-minio}
+      - MINIO_PORT=${MINIO_PORT:-9000}
+      - MINIO_ACCESS_KEY=${MINIO_SECRET_KEY:-minio-access-key}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minio-secret-key}
+      - CELERY_BROKER_URL=amqp://${RABBITMQ_USER:-user}:${RABBITMQ_PASSWORD:-password}@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=amqp://${RABBITMQ_USER:-user}:${RABBITMQ_PASSWORD:-password}@rabbitmq:5672//
+      - PDF_BUCKET_NAME=${PDF_BUCKET_NAME:-pdf-files}
+      - CELERY_CONVERT_TASK=${CELERY_CONVERT_TASK:-tasks.convert}
+      - CW_WEBHOOK_URL=${CW_WEBHOOK_URL}
+      - CELERY_ACKS_LATE=${CELERY_ACKS_LATE:-1}
+      - CELERYD_PREFETCH_MULTIPLIER=${CELERYD_PREFETCH_MULTIPLIER:-1}
+      - X_MAX_PRIORITY=${X_MAX_PRIORITY:-10}
+      - BUCKET_FILE_EXPIRATION_DAYS=${BUCKET_FILE_EXPIRATION_DAYS:-2}
+      - GMAIL_ADDRESS=${GMAIL_ADDRESS}
+      - GMAIL_PASSWORD=${GMAIL_PASSWORD}
+    volumes: # only use for develop
+      - ./api:/app
+    command: [
+        "uvicorn",
+        "server:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "6868",
+        "--reload", # remove auto-reload if deploying to production
+      ]
+    networks:
+      - app-tier

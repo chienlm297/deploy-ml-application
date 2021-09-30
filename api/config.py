@@ -5,8 +5,8 @@ config = {
     "TORCHSERVE_PORT": os.environ.get("TORCHSERVE_PORT") or "8000",
     "MINIO_ADDRESS": os.environ.get("MINIO_ADDRESS") or "0.0.0.0",
     "MINIO_PORT": os.environ.get("MINIO_PORT") or "9000",
-    "MINIO_ACCESS_KEY": os.environ.get("MINIO_ACCESS_KEY") or "",
-    "MINIO_SECRET_KEY": os.environ.get("MINIO_SECRET_KEY") or "",
+    "MINIO_ACCESS_KEY": os.environ.get("MINIO_ACCESS_KEY") or "minio-access-key",
+    "MINIO_SECRET_KEY": os.environ.get("MINIO_SECRET_KEY") or "minio-secret-key",
     "BUCKET_IMAGE": os.environ.get("BUCKET_IMAGE") or "pdf-files",
     "CELERY_CONVERT_TASK": os.environ.get("CELERY_CONVERT_TASK") or "tasks.convert",
     "CELERY_BROKER_URL": os.environ.get("CELERY_BROKER_URL")
